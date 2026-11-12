@@ -177,6 +177,8 @@ class QDFLAppWindow(qtx.QXWindow):
         menu_help = menu_bar.addMenu( L('@QDFLAppWindow.help') )
         menu_help_action_github = menu_help.addAction( L('@QDFLAppWindow.visit_github_page') )
         menu_help_action_github.triggered.connect(lambda: qtx.QDesktopServices.openUrl(qtx.QUrl('https://github.com/Jomel02/DeepFaceLive' )))
+        menu_help_action_about = menu_help.addAction( L('@QDFLAppWindow.about') )
+        menu_help_action_about.triggered.connect(self._on_about)
 
         self.q_live_swap = None
         self.q_live_swap_container = qtx.QXWidget()
@@ -202,6 +204,17 @@ class QDFLAppWindow(qtx.QXWindow):
         q_live_swap = self.q_live_swap = QLiveSwap(userdata_path=self._userdata_path, settings_dirpath=self._settings_dirpath)
         q_live_swap.initialize()
         self.content_l.addWidget(q_live_swap)
+
+    def _on_about(self):
+        # GPL v3 notice. Kept in English so the legal wording stays exact.
+        qtx.QMessageBox.about(self, 'About SynchFace',
+            '<b>SynchFace</b><br><br>'
+            'Based on DeepFaceLive by iperov '
+            '(<a href="https://github.com/iperov/DeepFaceLive">https://github.com/iperov/DeepFaceLive</a>)<br><br>'
+            'Licensed under the GNU General Public License v3 (GPL-3.0). '
+            'See the LICENSE file included with this program.<br><br>'
+            'This program comes with ABSOLUTELY NO WARRANTY, to the extent permitted by applicable law.<br><br>'
+            'Source code: <a href="https://github.com/Jomel02/DeepFaceLive">https://github.com/Jomel02/DeepFaceLive</a>')
 
     def _on_reset_modules_settings(self):
         if self.q_live_swap is not None:

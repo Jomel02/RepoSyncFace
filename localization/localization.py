@@ -175,6 +175,15 @@ class Localization:
                 'ja-JP' : 'GitHubページを開く',
                 'de-DE' : 'Besuchen Sie die Github-Seite'},
 
+    'QDFLAppWindow.about':{
+                'en-US' : 'About',
+                'ru-RU' : 'О программе',
+                'zh-CN' : '关于',
+                'es-ES' : 'Acerca de',
+                'it-IT' : 'Informazioni',
+                'ja-JP' : 'バージョン情報',
+                'de-DE' : 'Über'},
+
     'QDFLAppWindow.process_priority':{
                 'en-US' : 'Process priority',
                 'ru-RU' : 'Приоритет процесса',

@@ -1,3 +1,39 @@
+# SynchFace
+
+SynchFace is a real-time face swap desktop app for Windows. It is a modified
+version of **[DeepFaceLive](https://github.com/iperov/DeepFaceLive) by iperov**.
+All credit for the original application, models and research goes to the
+DeepFaceLive project. The upstream repository is archived.
+
+- **License:** GNU GPL v3 (see [LICENSE](LICENSE)). The software comes with
+  ABSOLUTELY NO WARRANTY.
+- **Source code:** https://github.com/Jomel02/DeepFaceLive
+- **What changed from DeepFaceLive:** see [NOTICE.md](NOTICE.md).
+- **Bundled models and libraries:** see
+  [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md). Some bundled models are
+  licensed for non-commercial research only.
+
+## Building on Windows
+
+Use any Python 3 to run the builder. It downloads its own embedded Python 3.8
+and all dependencies into the output folder:
+
+```
+python build\windows\WindowsBuilder.py --build-type dfl-windows --release-dir ..\Builds\SynchFace_DirectX12 --cache-dir ..\_cache --backend directml
+python build\windows\WindowsBuilder.py --build-type dfl-windows --release-dir ..\Builds\SynchFace_NVIDIA --cache-dir ..\_cache --backend cuda
+```
+
+Use `--backend cuda` for NVIDIA GPUs and `--backend directml` for other
+DirectX 12 GPUs. Start the app with `SynchFace.bat` in the output folder.
+
+---
+
+## Original DeepFaceLive README
+
+The text below is the original DeepFaceLive README, kept for reference and
+credit. Links, model lists and support/donation information there refer to
+the original project, not to SynchFace.
+
 <table align="center" border="0">
 
 <tr><td colspan=2 align="center">
