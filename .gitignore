@@ -5,3 +5,5 @@
 !*.jpg
 !*.png
 !requirements*
+build/windows/_vendor/*
+!build/windows/_vendor/README.md

@@ -17,7 +17,8 @@ class WindowsFolderBuilder:
     """
 
     # Constants
-    URL_PIP     = r'https://bootstrap.pypa.io/get-pip.py'
+    # The generic get-pip.py now requires Python >= 3.10; this URL keeps supporting 3.8.
+    URL_PIP     = r'https://bootstrap.pypa.io/pip/3.8/get-pip.py'
     URL_VSCODE  = r'https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-archive'
     URL_FFMPEG  = r'https://github.com/GyanD/codexffmpeg/releases/download/4.4/ffmpeg-4.4-full_build.zip'
     URL_7ZIP    = r'https://github.com/iperov/DeepFaceLive/releases/download/7za/7za.zip'
@@ -75,6 +76,13 @@ class WindowsFolderBuilder:
         Download the file or use cached and save to savepath
         """
         urlpath = Path(url)
+
+        # Prefer a local copy in build/windows/_vendor, so the build works if the URL disappears.
+        vendor_filepath = Path(__file__).parent / '_vendor' / urlpath.name
+        if vendor_filepath.exists():
+            print(f'Using local vendor copy {vendor_filepath}')
+            shutil.copy2(vendor_filepath, savepath)
+            return
 
         if progress_bar:
             print(f'Downloading {url}')
@@ -242,13 +250,13 @@ SET PATH=%INTERNAL%\ffmpeg;%PYTHON_PATH%;%CUDA_BIN_PATH%;%PYTHON_PATH%\Scripts;%
 fr"""@echo off
 cd /D %~dp0
 call setenv.bat
-rmdir %LOCALENV% /s /q
-mkdir %LOCALENV%
-mkdir %TEMP%
-mkdir %USERPROFILE%
-mkdir %DESKTOP%
-mkdir %LOCALAPPDATA%
-mkdir %APPDATA%
+rmdir "%LOCALENV%" /s /q
+mkdir "%LOCALENV%"
+mkdir "%TEMP%"
+mkdir "%USERPROFILE%"
+mkdir "%DESKTOP%"
+mkdir "%LOCALAPPDATA%"
+mkdir "%APPDATA%"
 """)
         (self.internal_path / 'python_console.bat').write_text(
 fr"""
@@ -300,12 +308,15 @@ cmd
 
     def cleanup(self):
         print ('Cleanup.\n')
-        subprocess.Popen(args=str(self.clearenv_bat_path), shell=True).wait()
+        subprocess.Popen(args=f'"{self.clearenv_bat_path}"', shell=True).wait()
         self.rmdir_in_all_subdirs (self.release_path, '__pycache__')
 
     def pack_sfx_release(self, archive_name):
         archiver_path = self._get_7zip_bin_path()
         archive_path = self.release_path.parent / (archive_name+'.exe')
+        if archive_path.exists():
+            # 7-Zip 'a' would add into the old archive and keep stale files.
+            archive_path.unlink()
 
         subprocess.Popen(args='"%s" a -t7z -sfx7z.sfx -m0=LZMA2 -mx9 -mtm=off -mmt=8 "%s" "%s"' % ( \
                                 str(archiver_path),
@@ -478,7 +489,7 @@ def build_deepfacelive_windows(release_dir, cache_dir, python_ver='3.8.10', back
     builder.install_pip_package('protobuf==3.20.1')
     builder.install_pip_package('opencv-python==4.8.0.74')
     builder.install_pip_package('opencv-contrib-python==4.8.0.74')
-    builder.install_pip_package('pyqt6==6.5.1')
+    builder.install_pip_package('pyqt6==6.5.1 pyqt6-qt6==6.5.1')
     builder.install_pip_package('onnx==1.14.0')
 
     if backend == 'cuda':
@@ -517,7 +528,7 @@ def build_deepfacelive_windows(release_dir, cache_dir, python_ver='3.8.10', back
     deepfacelive_path = builder.get_internal_path() / 'DeepFaceLive'
 
     print('Copying DeepFaceLive repository.')
-    builder.copyfiletree(Path(__file__).parent.parent.parent, deepfacelive_path)
+    shutil.copytree(Path(__file__).parent.parent.parent, deepfacelive_path, ignore=shutil.ignore_patterns('_vendor'))
     builder.rmdir_in_all_subdirs(deepfacelive_path, '.git')
 
     release_path = builder.get_release_path()
