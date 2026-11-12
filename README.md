@@ -26,18 +26,51 @@ python build\windows\WindowsBuilder.py --build-type dfl-windows --release-dir ..
 Use `--backend cuda` for NVIDIA GPUs and `--backend directml` for other
 DirectX 12 GPUs. Start the app with `SynchFace.bat` in the output folder.
 
-### Installers
+### Installers (reproduce `SynchFace_<backend>_Setup.exe` from scratch)
 
-Add `--release` to the builder command to leave out the non-commercial
-InsightFace models, the celebrity model list, the sample videos and the
-developer tools. Then build a `SynchFace_<backend>_Setup.exe` with
-[Inno Setup 6.3+](https://jrsoftware.org/isinfo.php), using full paths:
+1. Install the tools once (any Windows 10/11 PC; about 20 GB free disk space):
 
-```
-cd build\windows
-"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DBackend=DirectX12 /DSourceDir="C:ull\path	o\SynchFace_DirectX12_Release" installer.iss
-"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DBackend=NVIDIA /DSourceDir="C:ull\path	o\SynchFace_NVIDIA_Release" installer.iss
-```
+   ```
+   winget install --id Git.Git -e
+   winget install --id Python.Python.3.11 -e
+   winget install --id JRSoftware.InnoSetup -e --scope user
+   ```
+
+2. Get the source code:
+
+   ```
+   git clone https://github.com/Jomel02/DeepFaceLive.git C:\SF\SynchFace
+   ```
+
+3. Optional: copy your backup of `build\windows\_vendor` (Python, get-pip,
+   7-Zip, MSVC DLLs, ffmpeg) into the clone. Without it the builder downloads
+   the same files from the URLs listed in `build\windows\_vendor\README.md`.
+
+4. Build the release folders. `--release` leaves out the non-commercial
+   InsightFace models, the celebrity model list, the sample videos and the
+   developer tools. Keep the output folders outside the repo and use short,
+   full paths:
+
+   ```
+   cd C:\SF\SynchFace
+   python build\windows\WindowsBuilder.py --build-type dfl-windows --release-dir C:\SF\Builds\SynchFace_DirectX12_Release --cache-dir C:\SF\_cache --backend directml --release
+   python build\windows\WindowsBuilder.py --build-type dfl-windows --release-dir C:\SF\Builds\SynchFace_NVIDIA_Release --cache-dir C:\SF\_cache --backend cuda --release
+   ```
+
+5. Build the installers with Inno Setup. Pass `SourceDir` as a full path
+   without `..`, because some files are nested deeply and Windows limits
+   paths to 260 characters:
+
+   ```
+   cd C:\SF\SynchFace\build\windows
+   "%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DBackend=DirectX12 /DSourceDir="C:\SF\Builds\SynchFace_DirectX12_Release" /DOutputDir="C:\SF\Installers" installer.iss
+   "%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DBackend=NVIDIA /DSourceDir="C:\SF\Builds\SynchFace_NVIDIA_Release" /DOutputDir="C:\SF\Installers" installer.iss
+   ```
+
+   These commands are for Command Prompt. In PowerShell, put `&` before the
+   quoted `ISCC.exe` path.
+
+6. Test the result with `build\windows\TEST_CHECKLIST.md`.
 
 ---
 
