@@ -45,6 +45,4 @@ class QXImageDB:
     def warning_outline(color='black'): return QXImageDB._get('warning-outline.png', color)
 
     def app_icon(): return QXImageDB._get('app_icon.png', None)
-    def logo_barclay_stone(): return QXImageDB._get('logo_barclay_stone.png', None)
-    def logo_exmo(): return QXImageDB._get('logo_exmo.png', None)
     def splash_deepfacelive(): return QXImageDB._get('splash_deepfacelive.png', None)

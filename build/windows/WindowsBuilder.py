@@ -525,9 +525,9 @@ def build_deepfacelive_windows(release_dir, cache_dir, python_ver='3.8.10', back
             print (f'Copying {target}')
             shutil.copy (str(file), str(target) )
             
-    deepfacelive_path = builder.get_internal_path() / 'DeepFaceLive'
+    deepfacelive_path = builder.get_internal_path() / 'SynchFace'
 
-    print('Copying DeepFaceLive repository.')
+    print('Copying SynchFace repository.')
     shutil.copytree(Path(__file__).parent.parent.parent, deepfacelive_path, ignore=shutil.ignore_patterns('_vendor'))
     builder.rmdir_in_all_subdirs(deepfacelive_path, '.git')
 
@@ -545,23 +545,23 @@ def build_deepfacelive_windows(release_dir, cache_dir, python_ver='3.8.10', back
     shutil.copytree( str(Path(__file__).parent.parent / 'animatables'), str(userdata_path / 'animatables') )
 
     if backend == 'cuda':
-        builder.create_run_python_script('DeepFaceLive.bat', 'DeepFaceLive\\main.py', 'run DeepFaceLive --userdata-dir="%~dp0userdata"')
+        builder.create_run_python_script('SynchFace.bat', 'SynchFace\\main.py', 'run SynchFace --userdata-dir="%~dp0userdata"')
     elif backend == 'directml':
-        builder.create_run_python_script('DeepFaceLive.bat', 'DeepFaceLive\\main.py', 'run DeepFaceLive --userdata-dir="%~dp0userdata" --no-cuda')
+        builder.create_run_python_script('SynchFace.bat', 'SynchFace\\main.py', 'run SynchFace --userdata-dir="%~dp0userdata" --no-cuda')
 
-    builder.create_internal_run_python_script('build DeepFaceLive NVIDIA.bat',    'DeepFaceLive\\build\\windows\\WindowsBuilder.py', '--build-type dfl-windows --release-dir Builds\DeepFaceLive_NVIDIA --cache-dir _cache --backend cuda')
-    builder.create_internal_run_python_script('build DeepFaceLive DirectX12.bat', 'DeepFaceLive\\build\\windows\\WindowsBuilder.py', '--build-type dfl-windows --release-dir Builds\DeepFaceLive_DirectX12 --cache-dir _cache --backend directml')
+    builder.create_internal_run_python_script('build SynchFace NVIDIA.bat',    'SynchFace\\build\\windows\\WindowsBuilder.py', '--build-type dfl-windows --release-dir Builds\SynchFace_NVIDIA --cache-dir _cache --backend cuda')
+    builder.create_internal_run_python_script('build SynchFace DirectX12.bat', 'SynchFace\\build\\windows\\WindowsBuilder.py', '--build-type dfl-windows --release-dir Builds\SynchFace_DirectX12 --cache-dir _cache --backend directml')
 
     builder.run_python('main.py dev merge_large_files --delete-parts', cwd=deepfacelive_path)
     
-    builder.install_vscode(project_internal_dir='DeepFaceLive')
+    builder.install_vscode(project_internal_dir='SynchFace')
     
     builder.cleanup()
 
     if backend == 'cuda':
-        build_name = f'DeepFaceLive_NVIDIA_build_{datetime.now().strftime("%m_%d_%Y")}'
+        build_name = f'SynchFace_NVIDIA_build_{datetime.now().strftime("%m_%d_%Y")}'
     elif backend == 'directml':
-        build_name = f'DeepFaceLive_DirectX12_build_{datetime.now().strftime("%m_%d_%Y")}'
+        build_name = f'SynchFace_DirectX12_build_{datetime.now().strftime("%m_%d_%Y")}'
     builder.pack_sfx_release(build_name)
 
 class fixPathAction(argparse.Action):
