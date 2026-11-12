@@ -24,5 +24,10 @@ Modified by the SynchFace maintainer, starting 2026-11-12:
   sponsor logos were removed. Internal package and class names are unchanged.
 - **About dialog:** Help > About was added. It shows the origin, the license,
   the no-warranty notice and where to get the source code.
+- **Release builds:** `WindowsBuilder.py --release` leaves out the InsightFace
+  models (non-commercial research only), the predefined celebrity model list,
+  the sample videos and animatables, `doc/celebs`, `__dev_archived`,
+  VS Code and the developer scripts. The app hides the InsightFace options
+  when those models are missing.
 - **Documentation:** this NOTICE, `THIRD_PARTY_LICENSES.md`, and a SynchFace
   section at the top of `README.md` were added.

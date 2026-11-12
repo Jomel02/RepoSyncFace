@@ -249,7 +249,7 @@ SET PATH=%INTERNAL%\ffmpeg;%PYTHON_PATH%;%CUDA_BIN_PATH%;%PYTHON_PATH%\Scripts;%
         self.clearenv_bat_path.write_text(
 fr"""@echo off
 cd /D %~dp0
-call setenv.bat
+call "%~dp0setenv.bat"
 rmdir "%LOCALENV%" /s /q
 mkdir "%LOCALENV%"
 mkdir "%TEMP%"
@@ -474,7 +474,17 @@ pause
 """)
 
 
-def build_deepfacelive_windows(release_dir, cache_dir, python_ver='3.8.10', backend='cuda'):
+# Left out of --release builds: InsightFace models (non-commercial research only),
+# sample media of real people / movie clips, celebrity docs, archived dev files.
+RELEASE_EXCLUDED_PATHS = [ Path('modelhub/onnx/InsightFaceSwap'),
+                           Path('modelhub/onnx/InsightFace2d106'),
+                           Path('build/samples'),
+                           Path('build/animatables'),
+                           Path('doc/celebs'),
+                           Path('__dev_archived'),
+                         ]
+
+def build_deepfacelive_windows(release_dir, cache_dir, python_ver='3.8.10', backend='cuda', release=False):
 
     builder = WindowsFolderBuilder(release_path=Path(release_dir),
                                    cache_path=Path(cache_dir),
@@ -527,9 +537,22 @@ def build_deepfacelive_windows(release_dir, cache_dir, python_ver='3.8.10', back
             
     deepfacelive_path = builder.get_internal_path() / 'SynchFace'
 
+    repo_path = Path(__file__).parent.parent.parent
+
+    def copy_ignore(dirpath, names):
+        ignored = [ name for name in names if name == '_vendor' ]
+        if release:
+            rel_dirpath = Path(dirpath).relative_to(repo_path)
+            ignored += [ name for name in names if rel_dirpath / name in RELEASE_EXCLUDED_PATHS ]
+        return ignored
+
     print('Copying SynchFace repository.')
-    shutil.copytree(Path(__file__).parent.parent.parent, deepfacelive_path, ignore=shutil.ignore_patterns('_vendor'))
+    shutil.copytree(repo_path, deepfacelive_path, ignore=copy_ignore)
     builder.rmdir_in_all_subdirs(deepfacelive_path, '.git')
+
+    if release:
+        # Read by modelhub/DFLive/DFMModel.py to hide the predefined celebrity model list.
+        (deepfacelive_path / 'release_build.txt').write_text('SynchFace release build.')
 
     release_path = builder.get_release_path()
     userdata_path = release_path / 'userdata'
@@ -538,30 +561,43 @@ def build_deepfacelive_windows(release_dir, cache_dir, python_ver='3.8.10', back
     dfm_models_path = userdata_path / 'dfm_models'
     dfm_models_path.mkdir(parents=True, exist_ok=True)
 
-    print('Copying samples.')
-    shutil.copytree( str(Path(__file__).parent.parent / 'samples'), str(userdata_path / 'samples') )
+    if release:
+        (userdata_path / 'samples').mkdir(parents=True, exist_ok=True)
+        (userdata_path / 'animatables').mkdir(parents=True, exist_ok=True)
+    else:
+        print('Copying samples.')
+        shutil.copytree( str(Path(__file__).parent.parent / 'samples'), str(userdata_path / 'samples') )
 
-    print('Copying animatables.')
-    shutil.copytree( str(Path(__file__).parent.parent / 'animatables'), str(userdata_path / 'animatables') )
+        print('Copying animatables.')
+        shutil.copytree( str(Path(__file__).parent.parent / 'animatables'), str(userdata_path / 'animatables') )
 
     if backend == 'cuda':
         builder.create_run_python_script('SynchFace.bat', 'SynchFace\\main.py', 'run SynchFace --userdata-dir="%~dp0userdata"')
     elif backend == 'directml':
         builder.create_run_python_script('SynchFace.bat', 'SynchFace\\main.py', 'run SynchFace --userdata-dir="%~dp0userdata" --no-cuda')
 
-    builder.create_internal_run_python_script('build SynchFace NVIDIA.bat',    'SynchFace\\build\\windows\\WindowsBuilder.py', '--build-type dfl-windows --release-dir Builds\SynchFace_NVIDIA --cache-dir _cache --backend cuda')
-    builder.create_internal_run_python_script('build SynchFace DirectX12.bat', 'SynchFace\\build\\windows\\WindowsBuilder.py', '--build-type dfl-windows --release-dir Builds\SynchFace_DirectX12 --cache-dir _cache --backend directml')
+    if not release:
+        builder.create_internal_run_python_script('build SynchFace NVIDIA.bat',    'SynchFace\\build\\windows\\WindowsBuilder.py', '--build-type dfl-windows --release-dir Builds\SynchFace_NVIDIA --cache-dir _cache --backend cuda')
+        builder.create_internal_run_python_script('build SynchFace DirectX12.bat', 'SynchFace\\build\\windows\\WindowsBuilder.py', '--build-type dfl-windows --release-dir Builds\SynchFace_DirectX12 --cache-dir _cache --backend directml')
 
     builder.run_python('main.py dev merge_large_files --delete-parts', cwd=deepfacelive_path)
     
-    builder.install_vscode(project_internal_dir='SynchFace')
+    if not release:
+        builder.install_vscode(project_internal_dir='SynchFace')
     
     builder.cleanup()
+
+    if release:
+        # Developer helper scripts are not needed by end users.
+        for dev_bat in ['python_console.bat', 'clearenv.bat']:
+            (builder.get_internal_path() / dev_bat).unlink()
 
     if backend == 'cuda':
         build_name = f'SynchFace_NVIDIA_build_{datetime.now().strftime("%m_%d_%Y")}'
     elif backend == 'directml':
         build_name = f'SynchFace_DirectX12_build_{datetime.now().strftime("%m_%d_%Y")}'
+    if release:
+        build_name += '_release'
     builder.pack_sfx_release(build_name)
 
 class fixPathAction(argparse.Action):
@@ -576,6 +612,7 @@ if __name__ == '__main__':
     p.add_argument('--cache-dir', action=fixPathAction, default=None)
     p.add_argument('--python-ver', default="3.8.10")
     p.add_argument('--backend', choices=['cuda', 'directml'], default='cuda')
+    p.add_argument('--release', action='store_true', default=False, help='Build for distribution: leave out InsightFace models, celebrity model list, samples, VS Code and developer files.')
 
     args = p.parse_args()
 
@@ -583,7 +620,8 @@ if __name__ == '__main__':
         build_deepfacelive_windows(release_dir=args.release_dir,
                                    cache_dir=args.cache_dir,
                                    python_ver=args.python_ver,
-                                   backend=args.backend)
+                                   backend=args.backend,
+                                   release=args.release)
 
 
 

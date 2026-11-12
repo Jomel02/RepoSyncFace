@@ -31,9 +31,13 @@ class DFMModelInfo:
         return self._name
 
 
+# Release builds (WindowsBuilder.py --release) write this marker file and do not offer
+# the predefined celebrity model downloads. User models in dfm_models still load.
+IS_RELEASE_BUILD = (Path(__file__).parent.parent.parent / 'release_build.txt').exists()
+
 def get_available_models_info(models_path : Path) -> List[DFMModelInfo]:
     # predefined list of celebs with urls
-    dfm_models = [
+    dfm_models = [] if IS_RELEASE_BUILD else [
             DFMModelInfo(name='Albica Johns', model_path=models_path / f'Albica_Johns.dfm', url=rf'https://github.com/iperov/DeepFaceLive/releases/download/ALBICA_JOHNS/Albica_Johns.dfm'),
             DFMModelInfo(name='Amber Song', model_path=models_path / f'Amber_Song.dfm', url=rf'https://github.com/iperov/DeepFaceLive/releases/download/AMBER_SONG/Amber_Song.dfm'),
             DFMModelInfo(name='Ava de Addario', model_path=models_path / f'Ava_de_Addario.dfm', url=rf'https://github.com/iperov/DeepFaceLive/releases/download/AVA_DE_ADDARIO/Ava_de_Addario.dfm'),

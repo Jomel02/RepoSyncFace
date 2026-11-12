@@ -59,8 +59,12 @@ class FaceMarkerWorker(BackendWorker):
         cs.temporal_smoothing.call_on_number(self.on_cs_temporal_smoothing)
 
         cs.marker_type.enable()
-        cs.marker_type.set_choices(MarkerType, MarkerTypeNames, none_choice_name=None)
-        cs.marker_type.select(state.marker_type if state.marker_type is not None else MarkerType.GOOGLE_FACEMESH)
+        if onnx_models.InsightFace2D106 is not None:
+            cs.marker_type.set_choices(MarkerType, MarkerTypeNames, none_choice_name=None)
+        else:
+            cs.marker_type.set_choices([MarkerType.OPENCV_LBF, MarkerType.GOOGLE_FACEMESH], MarkerTypeNames[:2], none_choice_name=None)
+        if not cs.marker_type.select(state.marker_type if state.marker_type is not None else MarkerType.GOOGLE_FACEMESH):
+            cs.marker_type.select(MarkerType.GOOGLE_FACEMESH)
 
     def on_cs_marker_type(self, idx, marker_type):
         state, cs = self.get_state(), self.get_control_sheet()
