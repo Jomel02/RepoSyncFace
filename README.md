@@ -26,6 +26,19 @@ python build\windows\WindowsBuilder.py --build-type dfl-windows --release-dir ..
 Use `--backend cuda` for NVIDIA GPUs and `--backend directml` for other
 DirectX 12 GPUs. Start the app with `SynchFace.bat` in the output folder.
 
+### Installers
+
+Add `--release` to the builder command to leave out the non-commercial
+InsightFace models, the celebrity model list, the sample videos and the
+developer tools. Then build a `SynchFace_<backend>_Setup.exe` with
+[Inno Setup 6.3+](https://jrsoftware.org/isinfo.php), using full paths:
+
+```
+cd build\windows
+"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DBackend=DirectX12 /DSourceDir="C:ull\path	o\SynchFace_DirectX12_Release" installer.iss
+"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DBackend=NVIDIA /DSourceDir="C:ull\path	o\SynchFace_NVIDIA_Release" installer.iss
+```
+
 ---
 
 ## Original DeepFaceLive README

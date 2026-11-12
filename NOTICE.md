@@ -29,5 +29,8 @@ Modified by the SynchFace maintainer, starting 2026-11-12:
   the sample videos and animatables, `doc/celebs`, `__dev_archived`,
   VS Code and the developer scripts. The app hides the InsightFace options
   when those models are missing.
+- **Installer:** an Inno Setup script (`build/windows/installer.iss`) and an
+  icon (`build/windows/app_icon.ico`) were added. They package a release build
+  into `SynchFace_<backend>_Setup.exe`.
 - **Documentation:** this NOTICE, `THIRD_PARTY_LICENSES.md`, and a SynchFace
   section at the top of `README.md` were added.

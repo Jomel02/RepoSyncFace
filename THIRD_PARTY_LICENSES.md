@@ -63,15 +63,21 @@ Last checked: 2026-11-12.
 
 ### Additional packages in the NVIDIA (CUDA) build
 
-These are not yet confirmed from a finished CUDA build.
+Taken from the package metadata of the finished CUDA release build.
 
 | Component | Version | License |
 |---|---|---|
 | torch | 1.13.1+cu117 | BSD-3-Clause |
-| torchvision | 0.14.1+cu117 | BSD-3-Clause |
+| torchvision | 0.14.1+cu117 | BSD |
 | onnxruntime-gpu | 1.15.1 | MIT |
-| NVIDIA CUDA / cuDNN / cuBLAS DLLs (taken from the torch wheel into `_internal/CUDA/bin`) | 11.7 | NVIDIA license agreements: **UNVERIFIED** redistribution terms |
-| torchvision dependencies (Pillow, requests and its dependencies) | latest compatible | **UNVERIFIED** until the CUDA build is inspected |
+| Pillow | 10.4.0 | HPND |
+| requests | 2.32.4 | Apache-2.0 |
+| urllib3 | 2.2.3 | MIT |
+| idna | 3.15 | BSD-3-Clause |
+| charset-normalizer | 3.5.2 | MIT |
+| certifi | 2026.10.23 | MPL-2.0 |
+| NVIDIA CUDA 11.7 runtime, cuBLAS, cuDNN 8, cuFFT, cuRAND, cuSOLVER, cuSPARSE, CUPTI and NVRTC DLLs (19 files, about 2.3 GB, taken from the torch wheel into `_internal/CUDA/bin`) | 11.7 / 8 | NVIDIA license agreements: **UNVERIFIED** redistribution terms |
+| `zlibwapi.dll` (copied from the torch wheel into `_internal/CUDA/bin`) | | zlib license (usual for zlib builds): **UNVERIFIED** for this binary |
 
 ## Other bundled binaries
 
